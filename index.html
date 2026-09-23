@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Manager Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      background-color: #f4f6fb;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 80px;
+      background-color: #0d1424;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      color: #fff;
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    .nav-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #8c9ba5;
+      margin-bottom: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .nav-btn:hover {
+      color: #fff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-btn.active {
+      background-color: #26334d;
+      color: #fff;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      padding: 25px;
+      overflow-y: auto;
+      max-width: 800px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .header .date-display {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    /* Cards Layout */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .val-green { color: #059669; }
+    .val-black { color: #111827; }
+    .val-amber { color: #d97706; }
+
+    /* Forms & Inputs */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 5px;
+    }
+
+    .input-field, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .input-field:focus, select:focus {
+      border-color: #3b82f6;
+    }
+
+    .btn-blue {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-blue:hover {
+      background-color: #2563eb;
+    }
+
+    /* Views visibility */
+    .view-page {
+      display: none;
+    }
+
+    .view-page.active-page {
+      display: block;
+    }
+
+    /* Table & List styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      font-size: 13px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    th {
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .btn-action {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 5px;
+      color: #3b82f6;
+    }
+
+    .btn-action.delete {
+      color: #ef4444;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #9ca3af;
+      padding: 30px 0;
+    }
+
+    /* Chart Placeholder */
+    .chart-container {
+      margin-top: 15px;
+      height: 120px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px dashed #e5e7eb;
+      padding-bottom: 10px;
+    }
+
+    .chart-bar {
+      width: 6%;
+      background-color: #dbeafe;
+      border-radius: 4px;
+      height: 10%;
+    }
+
+    .chart-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="brand">SM</div>
+    
+    <!-- Navigation Buttons corresponding to the 5 screens -->
+    <button class="nav-btn active" onclick="switchTab('dashboard', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z"/></svg>
+    </button>
+    
+    <button class="nav-btn" onclick="switchTab('sales', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+    </button>
+    
+    <button class="nav-btn" onclick="switchTab('stock', this)">
+      <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-5H4v5zm6 0h5v-5h-5v5zm6 0h5v-5h-5v5zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>
+    </button>
+    
+    <button class="nav-btn" onclick="switchTab('expenses', this)">
+      <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1H7c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+    </button>
+    
+    <button class="nav-btn" onclick="switchTab('reports', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+    </button>
+  </div>
+
+  <!-- Main Content Body -->
+  <div class="main-content">
+
+    <!-- PAGE 1: DASHBOARD -->
+    <div id="page-dashboard" class="view-page active-page">
+      <div class="header">
+        <h1>Dashboard</h1>
+        <div class="date-display" id="current-date"></div>
+      </div>
+
+      <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="font-size: 16px;">Report period</h3>
+          <p style="font-size: 12px; color: #6b7280; max-width: 250px;">All dashboard figures update automatically from your records.</p>
+        </div>
+        <div>
+          <select style="width: 140px;">
+            <option>This Month</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom: 15px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Sales</div>
+          <div class="stat-value val-green" id="dash-sales">Rs 0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cost of Goods Sold</div>
+          <div class="stat-value val-black" id="dash-cogs">Rs 0.00</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom: 15px;">
+        <div class="stat-card">
+          <div class="stat-label">Expenses</div>
+          <div class="stat-value val-amber" id="dash-expenses">Rs 0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Net Profit / Loss</div>
+          <div class="stat-value val-green" id="dash-net">Rs 0.00</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom: 20px;">
+        <div class="stat-card">
+          <div class="stat-label">Stock Value</div>
+          <div class="stat-value val-black" id="dash-stock-val">Rs 0.00</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 15px; font-weight: 600;">Sales – Last 12 Months</h3>
+        <div class="chart-container">
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar" style="height: 60%; background-color: #3b82f6;"></div>
+        </div>
+        <div class="chart-labels">
+          <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span>
+          <span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: SALES / BILLS -->
+    <div id="page-sales" class="view-page">
+      <div class="header">
+        <h1>Sales / Bills</h1>
+        <div class="date-display" id="current-date-sales"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 15px;">Create Sale / Bill</h3>
+        <input type="hidden" id="sale-edit-index" value="-1">
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Customer Name</label>
+            <input type="text" id="sale-customer" class="input-field" placeholder="Walk-in customer">
+          </div>
+          <div class="form-group">
+            <label>Product</label>
+            <select id="sale-product-select" onchange="autoFillPrice()">
+              <option value="">Select Product</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" id="sale-qty" class="input-field" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Selling price (per unit)</label>
+            <input type="number" id="sale-price" class="input-field" placeholder="0.00">
+          </div>
+        </div>
+
+        <button class="btn-blue" id="btn-save-sale" onclick="saveSale()">Save Bill</button>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3>Bill / Sales History</h3>
+          <button style="padding: 6px 12px; background: #e0e7ff; color: #3730a3; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Print Bills</button>
+        </div>
+        
+        <div id="sales-table-container">
+          <div class="empty-state">No bills yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: STOCK -->
+    <div id="page-stock" class="view-page">
+      <div class="header">
+        <h1>Stock</h1>
+        <div class="date-display" id="current-date-stock"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 15px;">Add / Update Stock Item</h3>
+        <input type="hidden" id="stock-edit-index" value="-1">
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Product name</label>
+            <input type="text" id="prod-name" class="input-field" placeholder="e.g. T-Shirt">
+          </div>
+          <div class="form-group">
+            <label>SKU</label>
+            <input type="text" id="prod-sku" class="input-field" placeholder="Optional">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Buy price</label>
+            <input type="number" id="prod-buy" class="input-field" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Sell price</label>
+            <input type="number" id="prod-sell" class="input-field" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Opening / added quantity</label>
+            <input type="number" id="prod-qty" class="input-field" placeholder="0">
+          </div>
+        </div>
+
+        <button class="btn-blue" id="btn-save-stock" onclick="saveStock()">Save Product</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 15px;">Inventory</h3>
+        <div id="stock-table-container">
+          <div class="empty-state">No products yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 4: EXPENSES -->
+    <div id="page-expenses" class="view-page">
+      <div class="header">
+        <h1>Expenses</h1>
+        <div class="date-display" id="current-date-expenses"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 15px;">Add Expense</h3>
+        <input type="hidden" id="expense-edit-index" value="-1">
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Expense Category / Name</label>
+            <input type="text" id="exp-category" class="input-field" placeholder="Rent, electricity, trans...">
+          </div>
+          <div class="form-group">
+            <label>Amount</label>
+            <input type="number" id="exp-amount" class="input-field" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Note</label>
+            <input type="text" id="exp-note" class="input-field">
+          </div>
+        </div>
+
+        <button class="btn-blue" id="btn-save-expense" onclick="saveExpense()">Save Expense</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 15px;">Expense History</h3>
+        <div id="expense-table-container">
+          <div class="empty-state">No expenses yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: REPORTS -->
+    <div id="page-reports" class="view-page">
+      <div class="header">
+        <h1>Reports</h1>
+        <div class="date-display" id="current-date-reports"></div>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <div>
+            <h3>Profit & Loss Report</h3>
+            <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">Choose month or year to see sales, stock cost, expenses and profit.</p>
+          </div>
+          <div>
+            <select style="width: 140px;">
+              <option>Current Month</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 20px;">
+          <div class="stat-card" style="border: 1px solid #f3f4f6;">
+            <div class="stat-label">Sales</div>
+            <div class="stat-value val-green" id="rep-sales">Rs 0.00</div>
+          </div>
+          <div class="stat-card" style="border: 1px solid #f3f4f6;">
+            <div class="stat-label">Product Cost</div>
+            <div class="stat-value val-black" id="rep-cost">Rs 0.00</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 15px;">
+          <div class="stat-card" style="border: 1px solid #f3f4f6;">
+            <div class="stat-label">Operating Expenses</div>
+            <div class="stat-value val-amber" id="rep-expenses">Rs 0.00</div>
+          </div>
+          <div class="stat-card" style="border: 1px solid #f3f4f6;">
+            <div class="stat-label">Profit / Loss</div>
+            <div class="stat-value val-green" id="rep-profit">Rs 0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 15px;">Data Management</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <button class="btn-blue" style="background: #e0e7ff; color: #3730a3;" onclick="alert('Backup functionality triggered!')">Export Backup (JSON)</button>
+          <button class="btn-blue" style="background: #fee2e2; color: #991b1b;" onclick="clearAllData()">Delete All Data</button>
+        </div>
+        <p style="font-size: 12px; color: #6b7280; line-height: 1.4;">Data is stored locally in this browser memory. Export a backup regularly. This version is designed as a single-page store manager.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // State Store
+    let state = {
+      stock: [],
+      sales: [],
+      expenses: []
+    };
+
+    // Initialize Application
+    window.onload = function() {
+      // Set current formatted date
+      const dateStr = new Date().toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      }) + ' at ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      document.querySelectorAll('[id^="current-date"]').forEach(el => {
+        el.textContent = dateStr;
+      });
+
+      renderAll();
+    };
+
+    // Navigation Switcher
+    function switchTab(pageId, btn) {
+      document.querySelectorAll('.view-page').forEach(p => p.classList.remove('active-page'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById('page-' + pageId).classList.add('active-page');
+      btn.classList.add('active');
+    }
+
+    /* --- STOCK FUNCTIONS --- */
+    function saveStock() {
+      const name = document.getElementById('prod-name').value;
+      const sku = document.getElementById('prod-sku').value;
+      const buy = parseFloat(document.getElementById('prod-buy').value) || 0;
+      const sell = parseFloat(document.getElementById('prod-sell').value) || 0;
+      const qty = parseInt(document.getElementById('prod-qty').value) || 0;
+      const editIdx = parseInt(document.getElementById('stock-edit-index').value);
+
+      if (!name) return alert('Please enter product name');
+
+      if (editIdx >= 0) {
+        state.stock[editIdx] = { name, sku, buy, sell, qty };
+        document.getElementById('stock-edit-index').value = -1;
+        document.getElementById('btn-save-stock').textContent = 'Save Product';
+      } else {
+        state.stock.push({ name, sku, buy, sell, qty });
+      }
+
+      resetStockForm();
+      renderAll();
+    }
+
+    function editStock(index) {
+      const item = state.stock[index];
+      document.getElementById('prod-name').value = item.name;
+      document.getElementById('prod-sku').value = item.sku;
+      document.getElementById('prod-buy').value = item.buy;
+      document.getElementById('prod-sell').value = item.sell;
+      document.getElementById('prod-qty').value = item.qty;
+      
+      document.getElementById('stock-edit-index').value = index;
+      document.getElementById('btn-save-stock').textContent = 'Update Product';
+    }
+
+    function deleteStock(index) {
+      state.stock.splice(index, 1);
+      renderAll();
+    }
+
+    function resetStockForm() {
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-sku').value = '';
+      document.getElementById('prod-buy').value = '';
+      document.getElementById('prod-sell').value = '';
+      document.getElementById('prod-qty').value = '';
+    }
+
+    /* --- SALES FUNCTIONS --- */
+    function autoFillPrice() {
+      const selectedIndex = document.getElementById('sale-product-select').value;
+      if (selectedIndex !== "" && state.stock[selectedIndex]) {
+        document.getElementById('sale-price').value = state.stock[selectedIndex].sell;
+      }
+    }
+
+    function saveSale() {
+      const customer = document.getElementById('sale-customer').value || 'Walk-in customer';
+      const prodIndex = document.getElementById('sale-product-select').value;
+      const qty = parseInt(document.getElementById('sale-qty').value) || 1;
+      const price = parseFloat(document.getElementById('sale-price').value) || 0;
+      const editIdx = parseInt(document.getElementById('sale-edit-index').value);
+
+      if (prodIndex === "") return alert('Please select a product');
+
+      const productObj = state.stock[prodIndex];
+
+      if (editIdx >= 0) {
+        state.sales[editIdx] = { customer, productName: productObj.name, buyPrice: productObj.buy, price, qty, total: price * qty };
+        document.getElementById('sale-edit-index').value = -1;
+        document.getElementById('btn-save-sale').textContent = 'Save Bill';
+      } else {
+        state.sales.push({ customer, productName: productObj.name, buyPrice: productObj.buy, price, qty, total: price * qty });
+      }
+
+      resetSaleForm();
+      renderAll();
+    }
+
+    function editSale(index) {
+      const sale = state.sales[index];
+      document.getElementById('sale-customer').value = sale.customer;
+      document.getElementById('sale-qty').value = sale.qty;
+      document.getElementById('sale-price').value = sale.price;
+
+      document.getElementById('sale-edit-index').value = index;
+      document.getElementById('btn-save-sale').textContent = 'Update Bill';
+    }
+
+    function deleteSale(index) {
+      state.sales.splice(index, 1);
+      renderAll();
+    }
+
+    function resetSaleForm() {
+      document.getElementById('sale-customer').value = '';
+      document.getElementById('sale-qty').value = '1';
+      document.getElementById('sale-price').value = '';
+      document.getElementById('sale-product-select').value = '';
+    }
+
+    /* --- EXPENSES FUNCTIONS --- */
+    function saveExpense() {
+      const category = document.getElementById('exp-category').value;
+      const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+      const note = document.getElementById('exp-note').value;
+      const editIdx = parseInt(document.getElementById('expense-edit-index').value);
+
+      if (!category) return alert('Please enter an expense category');
+
+      if (editIdx >= 0) {
+        state.expenses[editIdx] = { category, amount, note };
+        document.getElementById('expense-edit-index').value = -1;
+        document.getElementById('btn-save-expense').textContent = 'Save Expense';
+      } else {
+        state.expenses.push({ category, amount, note });
+      }
+
+      resetExpenseForm();
+      renderAll();
+    }
+
+    function editExpense(index) {
+      const exp = state.expenses[index];
+      document.getElementById('exp-category').value = exp.category;
+      document.getElementById('exp-amount').value = exp.amount;
+      document.getElementById('exp-note').value = exp.note;
+
+      document.getElementById('expense-edit-index').value = index;
+      document.getElementById('btn-save-expense').textContent = 'Update Expense';
+    }
+
+    function deleteExpense(index) {
+      state.expenses.splice(index, 1);
+      renderAll();
+    }
+
+    function resetExpenseForm() {
+      document.getElementById('exp-category').value = '';
+      document.getElementById('exp-amount').value = '';
+      document.getElementById('exp-note').value = '';
+    }
+
+    /* --- RENDER LOGIC --- */
+    function renderAll() {
+      // 1. Populate Stock Dropdown in Sales screen
+      const prodSelect = document.getElementById('sale-product-select');
+      prodSelect.innerHTML = '<option value="">Select Product</option>';
+      state.stock.forEach((item, index) => {
+        prodSelect.innerHTML += `<option value="${index}">${item.name}</option>`;
+      });
+
+      // 2. Render Stock Table
+      const stockContainer = document.getElementById('stock-table-container');
+      if (state.stock.length === 0) {
+        stockContainer.innerHTML = '<div class="empty-state">No products yet.</div>';
+      } else {
+        let html = '<table><thead><tr><th>Product Name</th><th>SKU</th><th>Buy</th><th>Sell</th><th>Qty</th><th>Actions</th></tr></thead><tbody>';
+        state.stock.forEach((item, i) => {
+          html += `<tr>
+            <td><b>${item.name}</b></td>
+            <td>${item.sku || '-'}</td>
+            <td>Rs ${item.buy.toFixed(2)}</td>
+            <td>Rs ${item.sell.toFixed(2)}</td>
+            <td>${item.qty}</td>
+            <td>
+              <button class="btn-action" onclick="editStock(${i})">Edit</button>
+              <button class="btn-action delete" onclick="deleteStock(${i})">Delete</button>
+            </td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+        stockContainer.innerHTML = html;
+      }
+
+      // 3. Render Sales Table
+      const salesContainer = document.getElementById('sales-table-container');
+      if (state.sales.length === 0) {
+        salesContainer.innerHTML = '<div class="empty-state">No bills yet.</div>';
+      } else {
+        let html = '<table><thead><tr><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th><th>Actions</th></tr></thead><tbody>';
+        state.sales.forEach((item, i) => {
+          html += `<tr>
+            <td>${item.customer}</td>
+            <td>${item.productName}</td>
+            <td>${item.qty}</td>
+            <td>Rs ${item.total.toFixed(2)}</td>
+            <td>
+              <button class="btn-action" onclick="editSale(${i})">Edit</button>
+              <button class="btn-action delete" onclick="deleteSale(${i})">Delete</button>
+            </td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+        salesContainer.innerHTML = html;
+      }
+
+      // 4. Render Expenses Table
+      const expContainer = document.getElementById('expense-table-container');
+      if (state.expenses.length === 0) {
+        expContainer.innerHTML = '<div class="empty-state">No expenses yet.</div>';
+      } else {
+        let html = '<table><thead><tr><th>Category / Name</th><th>Note</th><th>Amount</th><th>Actions</th></tr></thead><tbody>';
+        state.expenses.forEach((item, i) => {
+          html += `<tr>
+            <td><b>${item.category}</b></td>
+            <td>${item.note || '-'}</td>
+            <td>Rs ${item.amount.toFixed(2)}</td>
+            <td>
+              <button class="btn-action" onclick="editExpense(${i})">Edit</button>
+              <button class="btn-action delete" onclick="deleteExpense(${i})">Delete</button>
+            </td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+        expContainer.innerHTML = html;
+      }
+
+      // 5. Calculations
+      const totalSales = state.sales.reduce((acc, curr) => acc + curr.total, 0);
+      const totalCogs = state.sales.reduce((acc, curr) => acc + (curr.buyPrice * curr.qty), 0);
+      const totalExpenses = state.expenses.reduce((acc, curr) => acc + curr.amount, 0);
+      const netProfit = totalSales - totalCogs - totalExpenses;
+      const totalStockVal = state.stock.reduce((acc, curr) => acc + (curr.buy * curr.qty), 0);
+
+      // 6. Update Dashboard & Reports UI Numbers
+      document.getElementById('dash-sales').textContent = `Rs ${totalSales.toFixed(2)}`;
+      document.getElementById('dash-cogs').textContent = `Rs ${totalCogs.toFixed(2)}`;
+      document.getElementById('dash-expenses').textContent = `Rs ${totalExpenses.toFixed(2)}`;
+      document.getElementById('dash-net').textContent = `Rs ${netProfit.toFixed(2)}`;
+      document.getElementById('dash-stock-val').textContent = `Rs ${totalStockVal.toFixed(2)}`;
+
+      document.getElementById('rep-sales').textContent = `Rs ${totalSales.toFixed(2)}`;
+      document.getElementById('rep-cost').textContent = `Rs ${totalCogs.toFixed(2)}`;
+      document.getElementById('rep-expenses').textContent = `Rs ${totalExpenses.toFixed(2)}`;
+      document.getElementById('rep-profit').textContent = `Rs ${netProfit.toFixed(2)}`;
+    }
+
+    function clearAllData() {
+      if (confirm("Are you sure you want to delete all data?")) {
+        state = { stock: [], sales: [], expenses: [] };
+        renderAll();
+      }
+    }
+  </script>
+</body>
+</html>
